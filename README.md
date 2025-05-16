@@ -11,7 +11,11 @@ pip install wandb h5py einops scikit-learn tqdm scipy
 ```
 
 ## Datasets
-Due to anonymity, datasets are not released currently, but will be provided when published.
+All datasets used are released on [HuggingFace](https://huggingface.co/datasets/ayz2/hamiltonian_pdes). 
+
+
+## Examples
+A jupyter notebook (examples.ipynb) for running some examples involving neural functionals is provided. 
 
 ## Training
 
@@ -37,6 +41,3 @@ To train a Hamiltonian Neural Functional:
 ```
 python train.py --config=configs/hamiltonian/{adv/kdv/swe}.yaml
 ```
-
-## Examples
-A jupyter notebook (examples.ipynb) for running toy examples is provided. Additionally, the notebook serves as a tool to undestand neural functionals and visualize some of their properties.
