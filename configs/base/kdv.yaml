@@ -1,0 +1,50 @@
+model:
+    mode: normal
+    correlation: 0.8
+    model_name: unet
+    lr: 1.0e-4
+    pde: kdv
+    fno:
+        in_channels: 1
+        out_channels: 1
+        modes: 12
+        width: 32
+        cond_channels: 0
+        num_layers: 5
+        cond_dim: 0
+    unet:
+        n_input_scalar_components: 1
+        n_input_vector_components: 0
+        n_output_scalar_components: 1
+        n_output_vector_components: 0
+        time_history: 1
+        time_future: 1
+        hidden_channels: 12
+        cond_channels: 0
+        ch_mults: [1, 2, 2]
+        use_scale_shift_norm: False
+        cond_dim: 0
+
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    dataset:
+        pde: kdv
+        resolution: [200, 256] # nt, nx
+        start: 0.0
+        H_path: /anonymous/data
+        H_filter: 0.5
+        train_pct: 0.25
+    num_workers: 16
+    batch_size: 32
+
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 10
+    max_epochs: 250
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null

@@ -1,0 +1,51 @@
+model:
+    mode: normal
+    correlation: 0.8
+    model_name: fno2d
+    lr: 1.0e-4
+    pde: swe
+    fno2d:
+        in_channels: 3
+        modes1: 12
+        modes2: 12
+        num_layers: 5
+        out_channels: 3
+        width: 48
+        filtering: 0.0
+    unet:
+        n_input_scalar_components: 1
+        n_input_vector_components: 1
+        n_output_scalar_components: 1
+        n_output_vector_components: 1
+        time_history: 1
+        time_future: 1
+        hidden_channels: 32
+        ch_mults: [1, 2, 2]
+        n_blocks: 2
+        n_dims: 2
+        filtering: 0.0
+
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    dataset:
+        pde: swe
+        resolution: [101, 128, 128] # nt, nx, ny
+        t_start: 10
+        t_end: -1
+    num_workers: 16
+    batch_size: 4
+    normalizer:
+        use_norm: True
+        stat_path: /anonymous/data
+
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 10
+    max_epochs: 100
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null

@@ -1,0 +1,58 @@
+model:
+    mode: hamiltonian
+    correlation: 0.8
+    model_name: nf
+    pde: swe
+    lr: 1.0e-5
+    weight_decay: 1.0e-3
+    optimize_grad: True
+    derivative_mode: smooth
+    derivative_order: 8
+    filter: True
+    nf:
+        kernel_name: siren
+        func_dim: 3
+        coord_dim: 2
+        kernel_type: global
+        quadrature: trapezoidal
+        spatial_dim: 128
+        proj_dim: 64
+        mlp:
+            hidden_features: 64
+            hidden_layers: 5
+            film_type: local
+            film_dims: [32, 64, 64]
+            kernel_size: 3
+            periodic_embedding: False
+        siren:
+            hidden_features: 64
+            hidden_layers: 5
+            first_omega_0: 1.0
+            hidden_omega_0: 1.0
+            outermost_linear: False
+            film_type: global
+            film_dims: [64, 64, 64]
+            kernel_size: 5
+            dim: 2
+            filtering: 0.0
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    dataset:
+        pde: swe
+        resolution: [101, 128, 128] # nt, nx, ny
+        t_start: 10
+        t_end: -1
+    num_workers: 16
+    batch_size: 4
+    
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 10
+    max_epochs: 100
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null

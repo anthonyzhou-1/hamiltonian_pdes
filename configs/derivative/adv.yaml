@@ -1,0 +1,49 @@
+model:
+    mode: derivative
+    correlation: 0.8
+    model_name: fno
+    lr: 1.0e-4
+    weight_decay: 1.0e-3
+    pde: advection
+    fno:
+        in_channels: 1
+        out_channels: 1
+        modes: 10
+        width: 24
+        cond_channels: 0
+        num_layers: 5
+        cond_dim: 0
+    unet:
+        n_input_scalar_components: 1
+        n_input_vector_components: 0
+        n_output_scalar_components: 1
+        n_output_vector_components: 0
+        time_history: 1
+        time_future: 1
+        hidden_channels: 8
+        cond_channels: 0
+        ch_mults: [1, 2, 2]
+        use_scale_shift_norm: False
+        cond_dim: 0
+
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    resolution_train: [200, 128] # nt, nx
+    resolution_valid: [1000, 128]
+    dataset: # shared parameters
+        pde: advection
+        data_key: u
+    num_workers: 16
+    batch_size: 32
+
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 10
+    max_epochs: 100
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null

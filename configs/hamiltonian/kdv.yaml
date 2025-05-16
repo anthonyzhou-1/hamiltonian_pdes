@@ -1,0 +1,75 @@
+model:
+    mode: hamiltonian
+    correlation: 0.8
+    model_name: nf
+    pde: kdv 
+    lr: 2.0e-5
+    weight_decay: 1.0e-3
+    optimize_grad: True
+    ablate_H: False
+    ablate_grad: False
+    derivative_mode: smooth
+    derivative_order: 8
+    nf:
+        kernel_name: siren
+        func_dim: 1
+        coord_dim: 1
+        kernel_type: global
+        quadrature: trapezoidal
+        proj_dim: 32
+        mlp:
+            hidden_features: 32
+            hidden_layers: 4
+            film_type: global
+            film_dims: [16, 32, 32]
+            kernel_size: 3
+            periodic_embedding: True
+        siren:
+            hidden_features: 32
+            hidden_layers: 4
+            first_omega_0: 1.0
+            hidden_omega_0: 1.0
+            outermost_linear: False
+            film_type: global
+            film_dims: [32, 32, 32]
+            kernel_size: 3
+            periodic_embedding: False
+    unet:
+        n_input_scalar_components: 1
+        n_input_vector_components: 0
+        n_output_scalar_components: 1
+        n_output_vector_components: 0
+        time_history: 1
+        time_future: 1
+        hidden_channels: 12
+        cond_channels: 0
+        ch_mults: [1, 2, 2]
+        use_scale_shift_norm: False
+        cond_dim: 0
+        ablate_grad: False
+
+
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    dataset:
+        pde: kdv
+        resolution: [200, 256] # nt, nx
+        start: 0.0
+        H_path: /anonymous/data
+        H_filter: 0.5
+        norm_x: False
+        train_pct: 0.25
+    num_workers: 16
+    batch_size: 32
+
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 10
+    max_epochs: 250
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null

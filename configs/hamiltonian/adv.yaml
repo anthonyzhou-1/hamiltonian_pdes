@@ -1,0 +1,55 @@
+model:
+    mode: hamiltonian
+    correlation: 0.8
+    model_name: nf
+    lr: 1.0e-5
+    pde: advection
+    derivative_mode: periodic_enforced
+    weight_decay: 1.0e-3
+    optimize_grad: True
+    nf:
+        kernel_name: siren
+        func_dim: 1
+        coord_dim: 1
+        kernel_type: nonlinear
+        quadrature: trapezoidal
+        proj_dim: 32
+        mlp:
+            hidden_features: 32
+            hidden_layers: 4
+            film_type: global
+            film_dims: [16, 32, 32]
+            kernel_size: 3
+        siren:
+            hidden_features: 32
+            hidden_layers: 4
+            first_omega_0: 1.0
+            hidden_omega_0: 1.0
+            outermost_linear: False
+            film_type: local
+            film_dims: [32, 32]
+            kernel_size: 3
+            periodic_embedding: False
+
+data:
+    train_path: /anonymous/data
+    valid_path: /anonymous/data
+    resolution_train: [200, 128] # nt, nx
+    resolution_valid: [1000, 128]
+    dataset: # shared parameters
+        pde: advection
+        data_key: u
+        norm_x: False
+    num_workers: 16
+    batch_size: 32
+
+training:
+    seed: 42
+    devices: [0]
+    accelerator: gpu
+    check_val_every_n_epoch: 20
+    max_epochs: 100
+    default_root_dir: logs/
+    project: anonymous_project
+    wandb_mode: online
+    checkpoint: null
