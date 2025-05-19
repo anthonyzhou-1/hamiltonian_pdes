@@ -5,9 +5,14 @@
 To install requirements:
 ```setup
 conda create -n "my_env" 
-conda install pytorch==2.0.0 torchvision==0.15.0 torchaudio==2.0.0 pytorch-cuda=11.8 -c pytorch -c nvidia 
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 conda install lightning -c conda-forge
-pip install wandb h5py einops scikit-learn tqdm scipy
+pip install wandb h5py einops scikit-learn tqdm scipy matplotlib
+```
+
+To run examples.ipynb:
+```
+pip install ipykernel
 ```
 
 ## Datasets
