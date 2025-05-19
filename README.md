@@ -15,7 +15,7 @@ All datasets used are released on [HuggingFace](https://huggingface.co/datasets/
 
 
 ## Examples
-A jupyter notebook (examples.ipynb) for running some examples involving neural functionals is provided. 
+A jupyter notebook (examples.ipynb) for running examples involving neural functionals is provided. 
 
 ## Training
 
