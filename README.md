@@ -1,4 +1,4 @@
-# Neural Functional: Learning Function to Scalar Maps for Neural PDE Surrogates [(Paper)](https://arxiv.org/abs/2505.13275)
+# Hamiltonian Neural PDE Solvers Through Functional Approximation (NeurIPS 2025) [(Paper)](https://arxiv.org/abs/2505.13275)
 
 ## Requirements
 
