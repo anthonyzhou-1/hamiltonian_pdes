@@ -6,10 +6,13 @@ from einops import rearrange
 from modules.models.FNO1D import FNO1d_cond
 from modules.models.FNO2D import FNO2d_cond
 from modules.models.Unet import Unet_cond
+from modules.models.Transolver import Transolver_2D
+from modules.models.PINO import SWE_Loss
 from modules.models.Hamiltonian import Hamiltonian_Wrapper
 from modules.models.NeuralFunctional import Neural_Functional
 from common.utils import richardson_extrapolation, calculate_dH_du
 from common.loss import ScaledLpLoss, PearsonCorrelationScore
+from common.filter import SGolayFilter2
 
 class TrainModule(L.LightningModule):
     def __init__(self,
@@ -38,15 +41,21 @@ class TrainModule(L.LightningModule):
         self.criterion = ScaledLpLoss()
         self.correlation_criterion = PearsonCorrelationScore(reduce_batch=True)
 
+        self.physics_informed = True if self.model_name == "pino" else False
+        self.physics_informed_weight = modelconfig['pino']['physics_informed_weight'] if self.physics_informed else 0.0
+
         if self.model_name == "fno":
             fnoconfig = modelconfig["fno"]
             self.model = FNO1d_cond(**fnoconfig)
-        elif self.model_name == "fno2d":
+        elif self.model_name == "fno2d" or self.model_name == "pino": # PINO uses same FNO backbone
             fnoconfig = modelconfig["fno2d"]
             self.model = FNO2d_cond(**fnoconfig)
         elif self.model_name == "unet":
             unetconfig = modelconfig["unet"]
             self.model = Unet_cond(**unetconfig)
+        elif self.model_name == "transolver":
+            transolverconfig = modelconfig["transolver"]
+            self.model = Transolver_2D(**transolverconfig)
         elif self.model_name == "nf":
             nfconfig = modelconfig["nf"]
             self.model = Neural_Functional(nfconfig)
@@ -60,10 +69,12 @@ class TrainModule(L.LightningModule):
                                              derivative_order=self.derivative_order,
                                              optimize_grad=self.optimize_grad,
                                              ablate_H=self.ablate_H,
-                                             ablate_grad=self.ablate_grad,
-                                             filter=self.filter)
+                                             ablate_grad=self.ablate_grad)
+            
+        if self.filter is not None:
+            self.filter = SGolayFilter2(window_size=15, poly_order=3)
 
-        print(f"Training: {self.model_name}, with mode: {self.mode}, and optimize_grad: {self.optimize_grad}")
+        print(f"Training: {self.model_name}, with mode: {self.mode}, and filter: {self.filter}, and optimize_grad: {self.optimize_grad}")
         self.save_hyperparameters()
 
     def forward(self, u, x, cond=None, return_H=False, return_grad=False):
@@ -152,6 +163,8 @@ class TrainModule(L.LightningModule):
 
             if self.optimize_grad:
                 pred = self.model.poisson_bracket(pred, x, u_input) # get du_dt from dH_du
+            if self.filter is not None:
+                pred = self.filter(pred, backend="torch")
 
             u_input = self.inference_step(u_input,
                                             pred,
@@ -202,12 +215,24 @@ class TrainModule(L.LightningModule):
         data, labels = self.get_data_labels(u, t_idx, dt, mode=self.mode, dx=dx) # slice data and labels with t_idx
 
         target = self.forward(data, x, cond) # shape (b, nx, 1) or (b, nx, ny, 1)
-        loss = self.criterion(target, labels)
+
+        if self.physics_informed:
+            dx = x[:, 1, 0, 0] - x[:, 0, 0, 0] # b, grid spacing for 2D SWE
+            dx = dx.unsqueeze(-1).unsqueeze(-1) # b 1 1, for broadcasting in SWE_Loss
+            data_loss = self.criterion(target, labels)
+            pde_loss = self.physics_informed_weight * SWE_Loss(data=labels, pred=target, dx=dx, dt=dt)
+            loss = data_loss + pde_loss
+        else:
+            loss = self.criterion(target, labels)
 
         if eval:
             return loss, data, labels, target
 
         self.log("train_loss", loss, on_step=False, on_epoch=True)
+        
+        if self.physics_informed:
+            self.log("data_loss", data_loss, on_step=False, on_epoch=True)
+            self.log("pde_loss", pde_loss, on_step=False, on_epoch=True)
 
         return loss
 

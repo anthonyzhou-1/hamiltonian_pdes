@@ -12,6 +12,8 @@ model:
         out_channels: 3
         width: 48
         filtering: 0.0
+    pino:
+        physics_informed_weight: 0.0001 
     unet:
         n_input_scalar_components: 1
         n_input_vector_components: 1
@@ -24,6 +26,16 @@ model:
         n_blocks: 2
         n_dims: 2
         filtering: 0.0
+    transolver:
+        space_dim: 2
+        n_layers: 8
+        n_hidden: 128
+        n_head: 8
+        mlp_ratio: 4
+        fun_dim: 3
+        out_dim: 3
+        slice_num: 64
+        ref: 1   
 
 data:
     train_path: /anonymous/data
